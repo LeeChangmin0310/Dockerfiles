@@ -53,12 +53,55 @@ Hunyuan3d_2_docker/
 │   └── textured_shape_gen.py   # Example usage script
 ├── Dockerfile                  # Dockerfile for GCP
 ├── package_versions.txt        # Package Versions Reference
+├── environment.yaml            # Package Versions Reference for conda
 └── README.md
 ```
 
-### Package Versions
-A separate file `package_versions.txt` contains the full list of installed packages and their versions for the `hunyuan_gpu` environment. This can be regenerated with:
-```bash
-pip freeze > package_versions.txt
+
+## Package Versions
+
+A separate file `package_versions.txt` contains the full list of installed packages and their exact versions for the `hunyuan_gpu` environment. In addition, we provide a `environment.yaml` file for Conda users to recreate the environment directly.
+
+### package\_versions.txt
+
+```text
+# Regenerate with:
+# pip freeze > package_versions.txt
+# This file can be used to install via pip:
+# pip install -r package_versions.txt
 ```
-Refer to package_versions.txt for full compatibility reference.
+
+### environment.yaml
+
+```yaml
+name: hunyuan_gpu
+channels:
+  - defaults
+  - pytorch
+  - nvidia
+dependencies:
+  - python=3.10
+  - pip
+  - pytorch=2.3.1
+  - torchvision=0.18.1
+  - torchaudio=2.3.1
+  - pytorch-cuda=11.8
+  - cudatoolkit=11.8
+  - pip:
+    - -r package_versions.txt
+```
+
+Refer to these files for full compatibility reference. If any package version conflicts occur, you can:
+
+* Install all Python packages exactly as listed:
+
+  ```bash
+  pip install -r package_versions.txt
+  ```
+
+* Or recreate the Conda environment:
+
+  ```bash
+  conda env create -f environment.yaml
+  ```
+
