@@ -8,6 +8,7 @@ GPU-ready Docker environments for state-of-the-art 3D generation / reconstructio
 | `flash3d_docker/`       | Flash3D               | Single image → 3D Scene             | 11.8 | PyTorch 2.2.2       |
 | `dreamscene360_docker/` | DreamScene360         | Text → 3D Scene (multi-view + .ply) | 12.4 | PyTorch 2.4.0 cu124 |
 | `dreamscene_docker/`    | dreamscene            | Text → 3D Mesh (.ply)               | 11.8 | PyTorch cu118       |
+| `hunyuan3d_2_docker/`   | Hunyuan3D 2.0         | Image/Text → Textured 3D (.glb/.ply) | 11.8 | PyTorch cu118       |
 
 ---
 
@@ -63,6 +64,22 @@ docker run --gpus all -it --rm \
 # 1. Navigate to DreamScene directory
 # 2. Run training using your config:
 #    CUDA_VISIBLE_DEVICES=0 python main.py --object --config configs/objects/sample.yaml
+
+# ----------------------------------------------------
+# Hunyuan3D 2.0 demo
+cd hunyuan3d_2_docker
+docker build -t hunyuan3d2:cu118 .
+
+# run container, mount assets/ and output/ for inputs & results
+docker run --gpus all -it --rm \
+  -v $(pwd)/assets:/app/Hunyuan3D-2/assets \
+  -v $(pwd)/output:/app/Hunyuan3D-2/output \
+  hunyuan3d2:cu118
+
+# Once inside:
+#   1) Refer to package_versions.txt & environment.yml for dependency versions
+#   2) python examples/textured_shape_gen.py
+cd ..
 # ----------------------------------------------------
 
 ```
