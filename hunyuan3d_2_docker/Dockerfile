@@ -1,23 +1,23 @@
+# -----------------------------------------------------------------------------
+# See package_versions.txt and environment.yml for full dependency lists
+# If you encounter version conflicts, refer to those files.
+# -----------------------------------------------------------------------------
+
 # 1. Base image with CUDA 11.8, cuDNN 8, and Ubuntu 20.04
 FROM nvidia/cuda:11.8.0-cudnn8-devel-ubuntu20.04
 
-# 2. Set environment variables for non-interactive installs and Python buffering
+# 2. Environment variables
 ENV DEBIAN_FRONTEND=noninteractive
 ENV PYTHONUNBUFFERED=1
 ENV CONDA_DEFAULT_ENV=hunyuan_gpu
 ENV CONDA_PREFIX=/opt/conda/envs/$CONDA_DEFAULT_ENV
 ENV PATH=$CONDA_PREFIX/bin:/opt/conda/bin:$PATH
 
-# 3. Install system dependencies
+# 3. System dependencies
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-      git \
-      wget \
-      build-essential \
-      python3-dev \
-      ca-certificates \
-      libgl1-mesa-glx \
-      libglib2.0-0 && \
+      git wget build-essential python3-dev ca-certificates \
+      libgl1-mesa-glx libglib2.0-0 && \
     rm -rf /var/lib/apt/lists/*
 
 # 4. Install Miniconda
@@ -26,18 +26,26 @@ RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -
     rm ~/miniconda.sh && \
     /opt/conda/bin/conda init bash
 
-# 5. Create and activate conda environment, install PyTorch with CUDA support
+# 5. Create conda environment from environment.yml (alternative)
+# RUN bash -lc "conda env create -f /app/Hunyuan3D-2/environment.yml && conda clean -afy"
+
+# ─── OR ────────────────────────────────────────────────────────────────────────
+
+# 5. Create and activate conda environment manually
 RUN bash -lc "\
     conda create -n $CONDA_DEFAULT_ENV python=3.10 -y && \
     source activate $CONDA_DEFAULT_ENV && \
-    conda install pytorch==2.3.1 torchvision==0.18.1 torchaudio==2.3.1 pytorch-cuda=11.8 -c nvidia -c pytorch -y && \
+    conda install pytorch==2.3.1 torchvision==0.18.1 \
+      torchaudio==2.3.1 pytorch-cuda=11.8 \
+      -c nvidia -c pytorch -y && \
     conda clean -afy"
 
 # 6. Use conda environment for subsequent RUN steps
 SHELL ["conda", "run", "-n", "hunyuan_gpu", "/bin/bash", "-c"]
 
-# 7. Clone Hunyuan3D-2 and set working directory
+# 7. Clone repo and copy version-lock files
 RUN git clone https://github.com/Tencent-Hunyuan/Hunyuan3D-2.git /app/Hunyuan3D-2
+COPY package_versions.txt environment.yml /app/Hunyuan3D-2/
 WORKDIR /app/Hunyuan3D-2
 
 # 8. Install Python dependencies
